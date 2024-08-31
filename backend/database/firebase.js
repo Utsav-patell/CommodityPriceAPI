@@ -5,7 +5,7 @@ const {getFirestore} = require('firebase-admin/firestore');
 const base64Cred = process.env.FIREBASE_CRED_BASE64;
 
 const firebaseCred = JSON.parse(Buffer.from(base64Cred, 'base64').toString('utf-8'));
-// TODO: Add SDKs for Firebase products that you want to use
+
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web apps Firebase configuration
