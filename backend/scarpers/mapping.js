@@ -1,6 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
+// This File contains scrapers for realtime mandi price from agmarket.gov.in website
+
 
 const getCommodityMapping = async () => {
     try {
@@ -70,4 +72,31 @@ const getStateDistrictMapping = async () => {
         console.error('Error storing state and district mapping:', error);
     }
 }
-module.exports = {getCommodityMapping,getStateMapping,getStateDistrictMapping};
+
+const getMarkeMapping = async () => {
+    try {
+        const response = await axios.get('https://agmarknet.gov.in/');
+        const $ = cheerio.load(response.data);
+        const marketYardMapping = {};
+
+        $('#ddlMarket option').each((index, element) => {
+            const value = $(element).attr('value').trim();
+            const text = $(element).text().trim();
+            // Skip placeholder and "Z[State Total]" options
+            if (value && text && value !== '0' && !text.startsWith('Z[')) { 
+                marketYardMapping[text.toLowerCase()] = value;
+            }
+        });
+        return marketYardMapping;
+    } catch (error) {
+        console.error('Error fetching market yard mapping:', error);
+    }
+}
+
+
+
+
+
+
+
+module.exports = {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping};

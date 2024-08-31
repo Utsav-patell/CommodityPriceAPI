@@ -2,13 +2,25 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const {storeData,fetchData} = require('./database/cloudstore');
-const {getCommodityMapping,getStateMapping,getStateDistrictMapping} = require('./scarpers/mapping');
+const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 
 // below line will fetch the body data and give in json format
-app.use(express.json())
+app.use(express.json());
 
-app.post('/api/send_district_mapping',async(req,res)=>{
+app.post('/api/send-market-mapping',async(req,res)=>{
+    try {
+        const marketMapping = await getMarkeMapping();
+        // console.log(marketMapping);
+        await storeData(marketMapping,'market');
+        res.send("Success");
+    } catch (error) {
+        console.log(error)
+        res.status(500).send('Error fetching market ');
+    }
+});
+
+app.post('/api/send-district-mapping',async(req,res)=>{
     try {
         const districtMapping = await getStateDistrictMapping();
         // console.log(districtMapping);
@@ -16,12 +28,12 @@ app.post('/api/send_district_mapping',async(req,res)=>{
         res.send("Success");
     } catch (error) {
         console.log(error)
-        res.status(500).send('Error fetching commodity');
+        res.status(500).send('Error fetching district');
     }
 })
 
 
-app.post('/api/send_state_mapping',async(req,res)=>{
+app.post('/api/send-state-mapping',async(req,res)=>{
     try {
         const stateMap = await getStateMapping();
         console.log(stateMap);
@@ -29,11 +41,11 @@ app.post('/api/send_state_mapping',async(req,res)=>{
         res.send("Success");
     } catch (error) {
         console.log(error)
-        res.status(500).send('Error fetching commodity');
+        res.status(500).send('Error fetching state');
     }
 })
 
-app.post('/api/send_commodity_mapping',async (req,res)=>{
+app.post('/api/send-commodity-mapping',async (req,res)=>{
     try {
     const commodityMap = await getCommodityMapping();
     console.log(commodityMap);
@@ -45,27 +57,31 @@ app.post('/api/send_commodity_mapping',async (req,res)=>{
     }  
 })
 
-app.get('/api/get-market-data/:commodity/:state/:district', async (req, res) => {
+app.get('/api/get-market-data/:commodity/:state?/:district?/:market?', async (req, res) => {
     try {
         // Fetch Parameters from URL
-        const {commodity,state,district} = req.params;
-        
+        const {commodity,state='0',district='0',market="0"} = req.params;
+        // commodity is compulsory feild
+        if (!commodity) {
+            return res.status(400).send("Commodity is a required field");
+        }
 
         // Fetch Mapping from Database
         const commodityMap = await fetchData('commodity');
         const stateMap = await fetchData('state');
         const districtMap = await fetchData('district');
-        
+        const marketMap = await fetchData('market');
+
         
         // Fetching Index
         const commodityIndex = commodityMap[commodity.toLowerCase()];
         const stateIndex = stateMap[state.toLowerCase()];
-        const districtIndex = districtMap[state.toLowerCase()][district.toLowerCase()];
-        
-        
-        
+        const districtIndex = district==0?'0': districtMap[state.toLowerCase()][district.toLowerCase()];
+        const marketIndex = marketMap[market.toLowerCase()];
 
-        const url = `https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=${commodityIndex}&Tx_State=${stateIndex}&Tx_District=${districtIndex}&Tx_Market=0&DateFrom=28-Aug-2024&DateTo=30-Aug-2024&Fr_Date=30-Aug-2024&To_Date=30-Aug-2024&Tx_Trend=0&Tx_CommodityHead=Banana&Tx_StateHead=Gujarat&Tx_DistrictHead=Bharuch&Tx_MarketHead=--Select--`;
+        
+        
+        const url = `https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=${commodityIndex}&Tx_State=${stateIndex}&Tx_District=${districtIndex}&Tx_Market=${marketIndex}&DateFrom=28-Aug-2024&DateTo=30-Aug-2024&Fr_Date=30-Aug-2024&To_Date=30-Aug-2024&Tx_Trend=0&Tx_CommodityHead=Banana&Tx_StateHead=Gujarat&Tx_DistrictHead=Bharuch&Tx_MarketHead=--Select--`;
         // Fetch the HTML Code of the provided URL
         const { data } = await axios.get(url);
         
