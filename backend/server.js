@@ -81,7 +81,7 @@ app.get('/api/get-market-data/', async (req, res) => {
         // Fetching Index
         const commodityIndex = commodityMap[commodity.toLowerCase()];
         const stateIndex = stateMap[state.toLowerCase()];
-        const districtIndex = districtMap[state.toLowerCase()][district.toLowerCase()];
+        const districtIndex = district==='0'?'0': districtMap[state.toLowerCase()][district.toLowerCase()];
         const marketIndex = marketMap[market.toLowerCase()];
         const fromDateValue = fromDate ? moment(fromDate,validDateFormat,true).format('YYYY-MM-DD') : moment().subtract(7, 'days').format('YYYY-MM-DD');
         const toDateValue = toDate ? moment(toDate,validDateFormat,true).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
