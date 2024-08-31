@@ -2,7 +2,10 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { initializeApp,cert } =require("firebase-admin/app");
 const {getFirestore} = require('firebase-admin/firestore'); 
-const serviceAccount = require('./firebase_cred.json');
+// const serviceAccount = require('./firebase_cred.json');
+const base64Cred = process.env.FIREBASE_CRED_BASE64;
+
+const firebaseCred = JSON.parse(Buffer.from(base64Cred, 'base64').toString('utf-8'));
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -14,7 +17,7 @@ const serviceAccount = require('./firebase_cred.json');
 
 
 initializeApp({
-  credential: cert(serviceAccount)
+  credential: cert(firebaseCred)
 });
 // Initialize Firebase
 const db = getFirestore();
