@@ -1,12 +1,17 @@
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const moment = require('moment');
 const {storeData,fetchData} = require('./database/cloudstore');
 const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 
 // below line will fetch the body data and give in json format
 app.use(express.json());
+
+
+
+const validDateFormat = ['DD-MM-YYYY', 'YYYY-MM-DD', 'MM/DD/YYYY'];
 
 app.post('/api/send-market-mapping',async(req,res)=>{
     try {
@@ -57,31 +62,31 @@ app.post('/api/send-commodity-mapping',async (req,res)=>{
     }  
 })
 
-app.get('/api/get-market-data/:commodity/:state?/:district?/:market?', async (req, res) => {
+app.get('/api/get-market-data/', async (req, res) => {
     try {
         // Fetch Parameters from URL
-        const {commodity,state='0',district='0',market="0"} = req.params;
+        const {commodity,state='0',district='0',market='0',fromDate,toDate} = req.query;
         // commodity is compulsory feild
         if (!commodity) {
             return res.status(400).send("Commodity is a required field");
         }
-
+        
         // Fetch Mapping from Database
         const commodityMap = await fetchData('commodity');
         const stateMap = await fetchData('state');
         const districtMap = await fetchData('district');
         const marketMap = await fetchData('market');
-
+        
         
         // Fetching Index
         const commodityIndex = commodityMap[commodity.toLowerCase()];
         const stateIndex = stateMap[state.toLowerCase()];
         const districtIndex = district==0?'0': districtMap[state.toLowerCase()][district.toLowerCase()];
         const marketIndex = marketMap[market.toLowerCase()];
-
+        const fromDateValue = fromDate ? moment(fromDate,validDateFormat,true).format('YYYY-MM-DD') : moment().subtract(7, 'days').format('YYYY-MM-DD');
+        const toDateValue = toDate ? moment(toDate,validDateFormat,true).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
         
-        
-        const url = `https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=${commodityIndex}&Tx_State=${stateIndex}&Tx_District=${districtIndex}&Tx_Market=${marketIndex}&DateFrom=28-Aug-2024&DateTo=30-Aug-2024&Fr_Date=30-Aug-2024&To_Date=30-Aug-2024&Tx_Trend=0&Tx_CommodityHead=Banana&Tx_StateHead=Gujarat&Tx_DistrictHead=Bharuch&Tx_MarketHead=--Select--`;
+        const url = `https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=${commodityIndex}&Tx_State=${stateIndex}&Tx_District=${districtIndex}&Tx_Market=${marketIndex}&DateFrom=${fromDateValue}&DateTo=${toDateValue}&Fr_Date=${fromDateValue}&To_Date=${toDateValue}&Tx_Trend=0&Tx_CommodityHead=${commodity}&Tx_StateHead=${state}&Tx_DistrictHead=${district}&Tx_MarketHead=--Select--`;
         // Fetch the HTML Code of the provided URL
         const { data } = await axios.get(url);
         
