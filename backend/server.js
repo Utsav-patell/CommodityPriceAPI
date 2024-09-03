@@ -2,16 +2,18 @@ const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment');
+const path = require('path');
 const {storeData,fetchData} = require('./database/cloudstore');
 const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 
 // below line will fetch the body data and give in json format
 app.use(express.json());
-
-
-
 const validDateFormat = ['DD-MM-YYYY', 'YYYY-MM-DD', 'MM/DD/YYYY'];
+
+app.get("/",(req,res)=>{
+    res.sendFile(path.join(__dirname, 'simpleform.html'));
+});
 
 app.post('/api/send-market-mapping',async(req,res)=>{
     try {
