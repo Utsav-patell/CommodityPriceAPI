@@ -3,7 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const path = require('path');
-const {storeData,fetchData} = require('./database/cloudstore');
+const {storeData,fetchData} = require('./database/cloudstore').default;
 const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 
@@ -22,8 +22,8 @@ app.post('/api/send-market-mapping',async(req,res)=>{
         await storeData(marketMapping,'market');
         res.send("Success");
     } catch (error) {
-        console.log(error)
-        res.status(500).send('Error fetching market ');
+
+        res.status(500).send(`Error fetching market ${error}`);
     }
 });
 
@@ -34,8 +34,8 @@ app.post('/api/send-district-mapping',async(req,res)=>{
         await storeData(districtMapping,'district');    
         res.send("Success");
     } catch (error) {
-        console.log(error)
-        res.status(500).send('Error fetching district');
+
+        res.status(500).send(`Error fetching district ${error}`);
     }
 })
 
@@ -47,8 +47,8 @@ app.post('/api/send-state-mapping',async(req,res)=>{
         await storeData(stateMap,'state');    
         res.send("Success");
     } catch (error) {
-        console.log(error)
-        res.status(500).send('Error fetching state');
+        
+        res.status(500).send(`Error fetching state ${error}`);
     }
 })
 
@@ -59,8 +59,8 @@ app.post('/api/send-commodity-mapping',async (req,res)=>{
     await storeData(commodityMap,'commodity'); 
     res.send("Success");
     } catch (error) {
-        console.log(error)
-        res.status(500).send('Error fetching commodity');
+        
+        res.status(500).send(`Error fetching commodity ${error}`);
     }  
 })
 
@@ -150,13 +150,13 @@ app.get('/api/get-market-data/', async (req, res) => {
             data: marketData
         });
     } catch (error) {
-        console.error('Error fetching market data:', error);
-        res.status(500).send('Error fetching data');
+
+        res.status(500).send(`Error fetching data ${error}`);
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT);
 
 
 
