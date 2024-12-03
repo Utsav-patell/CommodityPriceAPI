@@ -3,7 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const path = require('path');
-const {storeData,fetchData} = require('./database/cloudstore').default;
+const {storeData,fetchData} = require('./database/cloudstore');
 const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 

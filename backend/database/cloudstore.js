@@ -1,5 +1,5 @@
 
-import { collection } from './firebase';
+const db = require('./firebase');
 
 
 // Method To store Data 
@@ -10,7 +10,7 @@ import { collection } from './firebase';
 // Store and Update Data both by this only
 const storeData = async (data,doc)=>  {
 try {
-    const ref = collection('parameters').doc(doc); 
+    const ref = db.collection('parameters').doc(doc); 
     await ref.set(data,{merge:true});
     
 } catch (error) {
@@ -20,7 +20,7 @@ try {
 
 const fetchData = async (docId) => {
     try {
-    const ref = collection('parameters').doc(docId);
+    const ref = db.collection('parameters').doc(docId);
     const doc = await ref.get();
     if(!doc.exists){
     console.log(`${doc} does not exists`);
@@ -39,4 +39,4 @@ const fetchData = async (docId) => {
 }
 
 
-export default {storeData,fetchData};
+module.exports = {storeData,fetchData};
