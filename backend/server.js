@@ -3,11 +3,14 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment');
 const path = require('path');
+const cors = require('cors');
+
 const {storeData,fetchData} = require('./database/cloudstore');
 const {getCommodityMapping,getStateMapping,getStateDistrictMapping,getMarkeMapping} = require('./scarpers/mapping');
 const app = express();
 
 // below line will fetch the body data and give in json format
+app.use(cors());
 app.use(express.json());
 const validDateFormat = ['DD-MM-YYYY', 'YYYY-MM-DD', 'MM/DD/YYYY'];
 
@@ -150,7 +153,7 @@ app.get('/api/get-market-data/', async (req, res) => {
             data: marketData
         });
     } catch (error) {
-
+        console.error('Error fetching market data:', error);
         res.status(500).send(`Error fetching data ${error}`);
     }
 });
