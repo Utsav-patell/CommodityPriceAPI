@@ -19,8 +19,10 @@ app.post('/api/send-market-mapping',async(req,res)=>{
     try {
         const marketMapping = await getMarkeMapping();
         // console.log(marketMapping);
-        await storeData(marketMapping,'market');
-        res.send("Success");
+        // await storeData(marketMapping,'market');
+        keys = Object.keys(marketMapping)
+        // console.log(keys.join(', ')); 
+        res.send(keys);
     } catch (error) {
         console.log(error)
         res.status(500).send('Error fetching market ');
@@ -55,9 +57,11 @@ app.post('/api/send-state-mapping',async(req,res)=>{
 app.post('/api/send-commodity-mapping',async (req,res)=>{
     try {
     const commodityMap = await getCommodityMapping();
-    console.log(commodityMap);
-    await storeData(commodityMap,'commodity'); 
-    res.send("Success");
+    keys = Object.keys(commodityMap)
+    // console.log(keys.join(', ')); 
+    res.send(keys);
+    // await storeData(commodityMap,'commodity'); 
+    res.send("");
     } catch (error) {
         console.log(error)
         res.status(500).send('Error fetching commodity');
@@ -66,8 +70,9 @@ app.post('/api/send-commodity-mapping',async (req,res)=>{
 
 app.get('/api/get-market-data/', async (req, res) => {
     try {
+        console.log(req.query);
         // Fetch Parameters from URL
-        const {commodity,state='0',district='0',market='0',fromDate,toDate} = req.query;
+        const {commodity,state='0',district='0',market='0',startDate,endDate} = req.query;
         // commodity is compulsory feild
         if (!commodity) {
             return res.status(400).send("Commodity is a required field");
@@ -85,8 +90,8 @@ app.get('/api/get-market-data/', async (req, res) => {
         const stateIndex = stateMap[state.toLowerCase()];
         const districtIndex = district==='0'?'0': districtMap[state.toLowerCase()][district.toLowerCase()];
         const marketIndex = marketMap[market.toLowerCase()];
-        const fromDateValue = fromDate ? moment(fromDate,validDateFormat,true).format('YYYY-MM-DD') : moment().subtract(7, 'days').format('YYYY-MM-DD');
-        const toDateValue = toDate ? moment(toDate,validDateFormat,true).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
+        const fromDateValue = startDate ? moment(startDate,validDateFormat,true).format('YYYY-MM-DD') : moment().subtract(7, 'days').format('YYYY-MM-DD');
+        const toDateValue = endDate ? moment(endDate,validDateFormat,true).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
         
         const url = `https://agmarknet.gov.in/SearchCmmMkt.aspx?Tx_Commodity=${commodityIndex}&Tx_State=${stateIndex}&Tx_District=${districtIndex}&Tx_Market=${marketIndex}&DateFrom=${fromDateValue}&DateTo=${toDateValue}&Fr_Date=${fromDateValue}&To_Date=${toDateValue}&Tx_Trend=0&Tx_CommodityHead=${commodity}&Tx_StateHead=${state}&Tx_DistrictHead=${district}&Tx_MarketHead=--Select--`;
         // Fetch the HTML Code of the provided URL
@@ -97,7 +102,7 @@ app.get('/api/get-market-data/', async (req, res) => {
         
         let marketData = [];
         let isEmpty;
-        
+        console.log(url)
         $('#cphBody_GridPriceData tr').each((index, element) => {
             if (index === 0) return; // Skip the header row
             
@@ -144,7 +149,8 @@ app.get('/api/get-market-data/', async (req, res) => {
             });
             marketData.push(row);
         });
-
+        console.log(url)
+        // console.log(marketData)
         res.json({
             isEmpty,
             data: marketData
